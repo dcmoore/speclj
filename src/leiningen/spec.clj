@@ -42,6 +42,13 @@
         'leiningen.compile)
       ((ns-resolve 'leiningen.compile 'prep) project false))))
 
+(defn- merge-profiles-if-they-exist [project profiles]
+  (try
+    (require 'leiningen.core.project)
+    ((ns-resolve 'leiningen.core.project 'merge-profiles) project profiles)
+    (catch java.io.FileNotFoundException e
+      project)))
+
 (defn spec
   "Speclj - pronounced \"speckle\": a TDD/BDD framework for Clojure.
 
@@ -52,12 +59,13 @@ documentation, as opposed to this message provided by Leiningen, try this:
 
 That ought to do the trick."
   [project & args]
-  (prepare project)
-  (let [speclj-args (cons "-c" args)
-        classpath (compute-classpath-string project)
-        jvm-args ["-cp" classpath "-Dspeclj.invocation=lein spec"]]
-    (try
-      (require 'leiningen.core.main)
-      ((ns-resolve (the-ns 'leiningen.core.main) 'exit) (java jvm-args "speclj.main" speclj-args (:root project)))
-      (catch java.io.FileNotFoundException e
-        (java jvm-args "speclj.main" speclj-args (:root project))))))
+  (let [project (merge-profiles-if-they-exist project [:leiningen/test :test])]
+    (prepare project)
+    (let [speclj-args (cons "-c" args)
+          classpath (compute-classpath-string project)
+          jvm-args ["-cp" classpath "-Dspeclj.invocation=lein spec"]]
+      (try
+        (require 'leiningen.core.main)
+        ((ns-resolve (the-ns 'leiningen.core.main) 'exit) (java jvm-args "speclj.main" speclj-args (:root project)))
+        (catch java.io.FileNotFoundException e
+          (java jvm-args "speclj.main" speclj-args (:root project)))))))
