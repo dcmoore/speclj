@@ -189,7 +189,3 @@ Post issues on the speclj github project:
 * Speclj 2.* requires Clojure 1.4.0+
 * Clojure 1.3 is not supported by any version of Speclj due to a bug in Clojure 1.3.
 
-# License
-Copyright (C) 2010-2013 Micah Martin All Rights Reserved.
-
-Distributed under the The MIT License.
